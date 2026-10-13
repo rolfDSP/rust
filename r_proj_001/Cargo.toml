@@ -1,0 +1,10 @@
+[package]
+name = "r_proj_001"
+version = "0.1.0"
+edition = "2024"
+
+[workspace]
+members = ["libTest"]
+
+[dependencies]
+libTest = { path = "libTest" }

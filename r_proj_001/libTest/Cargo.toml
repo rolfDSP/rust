@@ -1,0 +1,10 @@
+[package]
+name = "libTest"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+# Name used in Rust code (`use lib_test::...`); snake_case avoids compiler warnings.
+name = "lib_test"
+
+[dependencies]
