@@ -1,0 +1,7 @@
+[package]
+name = "r_proj_021"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+myLib = {path="myLib"}
