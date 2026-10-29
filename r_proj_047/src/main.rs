@@ -17,7 +17,7 @@ fn saveCSV(matrix: &[Vec<f32>], filename: &str) -> Result<(), csv::Error> {
     Ok(())
 }
 
-/// Reads M and N and the file naame of the CSV file from the command line arguments (excluding the program name).
+/// Reads M and N and the file name of the CSV file from the command line arguments (excluding the program name).
 fn parse_args(args: &[String]) -> Result<(usize, usize, String), String> {
     if args.len() != 3 {
         return Err(format!("expected 3 arguments (M N fileName), got {}", args.len()));
@@ -28,10 +28,7 @@ fn parse_args(args: &[String]) -> Result<(usize, usize, String), String> {
     let n = args[1]
         .parse::<usize>()
         .map_err(|_| format!("invalid N: '{}'", args[1]))?;
-    let f = args[2]
-        .parse::<String>()
-        .map_err(|_| format!("invalid fileName: '{}", args[2]))?;
-    Ok((m, n, f))
+    Ok((m, n, args[2].clone()))
 }
 
 fn main() {
@@ -40,7 +37,7 @@ fn main() {
         Ok(dims) => dims,
         Err(e) => {
             eprintln!("Error: {e}");
-            eprintln!("Usage: r_proj_047 <M> <N>");
+            eprintln!("Usage: r_proj_047 <M> <N> <fileName>");
             std::process::exit(1);
         }
     };
@@ -51,7 +48,7 @@ fn main() {
     }
 
     println!("File name is: {}", file_name);
-    saveCSV(&m, &file_name);
+    saveCSV(&m, &file_name).expect("failed to write CSV");
 }
 
 #[cfg(test)]
@@ -104,19 +101,22 @@ mod tests {
 
     #[test]
     fn parse_args_valid() {
-        assert_eq!(parse_args(&strs(&["3", "5"])), Ok((3, 5)));
+        assert_eq!(
+            parse_args(&strs(&["3", "5", "out.csv"])),
+            Ok((3, 5, "out.csv".to_string()))
+        );
     }
 
     #[test]
     fn parse_args_wrong_count() {
         assert!(parse_args(&strs(&[])).is_err());
-        assert!(parse_args(&strs(&["3"])).is_err());
-        assert!(parse_args(&strs(&["3", "5", "7"])).is_err());
+        assert!(parse_args(&strs(&["3", "5"])).is_err());
+        assert!(parse_args(&strs(&["3", "5", "out.csv", "extra"])).is_err());
     }
 
     #[test]
     fn parse_args_not_a_number() {
-        assert!(parse_args(&strs(&["abc", "5"])).is_err());
-        assert!(parse_args(&strs(&["3", "-1"])).is_err());
+        assert!(parse_args(&strs(&["abc", "5", "out.csv"])).is_err());
+        assert!(parse_args(&strs(&["3", "-1", "out.csv"])).is_err());
     }
 }
