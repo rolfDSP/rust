@@ -1,0 +1,7 @@
+[package]
+name = "r_proj_044"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+textwrap = "0.16.0"
