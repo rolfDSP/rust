@@ -1,0 +1,8 @@
+[package]
+name = "r_proj_047"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+csv = "1.4.0"
+rand = "0.10.3"
