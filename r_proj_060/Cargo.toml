@@ -1,0 +1,36 @@
+[package]
+name = "r_proj_060"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+chrono = "0.4"
+polars = { version = "0.55.2", features = [
+    "lazy",          # LazyFrame + expression API + query optimizer
+    "csv",           # CSV reader / writer
+    "parquet",       # Parquet reader / writer
+    "json",          # JSON / NDJSON reader / writer
+    "strings",       # str() namespace (contains, to_uppercase, ...)
+    "regex",         # regex-based string operations
+    "concat_str",    # concat_str expression
+    "temporal",      # dt() namespace
+    "dtype-date",
+    "dtype-datetime",
+    "dtype-categorical",
+    "dtype-struct",
+    "is_in",         # is_in expression
+    "cum_agg",       # cum_sum, cum_max, ...
+    "rank",          # rank expression
+    "round_series",  # round()
+    "pivot",         # pivot / unpivot
+    "cross_join",
+    "semi_anti_join",
+    "describe",      # DataFrame::describe
+    "sql",           # SQL context
+    "dynamic_group_by",
+    "list_eval",
+    "diagonal_concat",
+    "rolling_window",  # rolling_mean, ...
+    "diff",
+    "interpolate",
+] }
