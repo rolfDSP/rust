@@ -1,0 +1,8 @@
+[package]
+name = "r_proj_062"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+chrono = "0.4.45"
+polars = { version = "0.55.2", features = ["lazy", "round_series", "is_between"] }
