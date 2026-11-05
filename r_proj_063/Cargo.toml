@@ -1,0 +1,27 @@
+[package]
+name = "r_proj_063"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tokio = { version = "1.54.1", features = ["full"] }
+
+[[example]]
+name = "tokio_basics"
+path = "src/examples/tokio_basics.rs"
+
+[[example]]
+name = "tokio_channels"
+path = "src/examples/tokio_channels.rs"
+
+[[example]]
+name = "tokio_io"
+path = "src/examples/tokio_io.rs"
+
+[[example]]
+name = "tokio_select"
+path = "src/examples/tokio_select.rs"
+
+[[example]]
+name = "tokio_shared_state"
+path = "src/examples/tokio_shared_state.rs"
