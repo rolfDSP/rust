@@ -1,0 +1,13 @@
+[package]
+name = "r_proj_067"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1"
+candle-core = "0.11"
+candle-nn = "0.11"
+hf-hub = { version = "1", features = ["blocking"] }
+# Only the row-based reader is used, so the Arrow integration stays out.
+parquet = { version = "60", default-features = false, features = ["snap"] }
+rand = "0.10"
