@@ -1,0 +1,8 @@
+[package]
+name = "r_proj_068"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.104"
+rust-bert = { version = "0.23", default-features = false, features = ["remote", "rustls-tls", "download-libtorch"] }
