@@ -1,6 +1,6 @@
 # Code Documentation
 
-This document explains how the example in `src/main.rs` works, how the `rust_bert` crate is built, and where to read more. It assumes you know some Rust, but no machine learning. For a quick start, see [README.md](README.md).
+This document explains how the example in `src/main.rs` works, how the `rust_bert` crate is built, and where to read more. It assumes you know some Rust, but no machine learning. For a quick start, see [README.md](../r_proj_068/README.md).
 
 ## Contents
 
