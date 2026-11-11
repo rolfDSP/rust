@@ -1,0 +1,11 @@
+[package]
+name = "r_proj_071"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+# "bundled" compiles SQLite into the program (no system library needed),
+# "chrono" lets rusqlite read/write chrono::NaiveDate directly.
+rusqlite = { version = "0.42", features = ["bundled", "chrono"] }
+chrono = "0.4"
+rand = "0.9"
