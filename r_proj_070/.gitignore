@@ -1,0 +1,5 @@
+/target
+# Database files that the example creates
+*.db
+*.db-wal
+*.db-shm
