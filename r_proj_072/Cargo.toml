@@ -1,0 +1,18 @@
+[package]
+name = "r_proj_072"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+nlprule = "0.6.4"
+regex = "1.5"
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+actix-web = "4.0"
+psutil = "3.2.2"
+actix-web-prom = "0.7.0"
+tracing = "0.1.37"
+tracing-subscriber = "0.2.0"
+
+[dev-dependencies]
+pretty_assertions = "1.4.0"
