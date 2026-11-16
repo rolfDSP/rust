@@ -9,6 +9,39 @@ pub fn test(a: i32, b: i32) -> i32{
     a + b
 }
 
+fn find_mount_point(device_node: &str) -> Option<String> {
+    let content = std::fs::read_to_string("/proc/mounts").ok()?;
+    for line in content.lines() {
+        let mut parts = line.splitn(3, ' ');
+        let device = parts.next()?;
+        let mount  = parts.next()?;
+        if device == device_node {
+            return Some(unescape_mount_path(mount));
+        }
+    }
+    None
+}
+
+fn unescape_mount_path(path: &str) -> String {
+    // /proc/mounts encodes spaces as \040, tabs as \011, etc.
+    let mut result = String::new();
+    let mut chars = path.chars().peekable();
+    while let Some(ch) = chars.next() {
+        if ch == '\\' {
+            let octal: String = chars.by_ref().take(3).collect();
+            if let Ok(n) = u8::from_str_radix(&octal, 8) {
+                result.push(n as char);
+            } else {
+                result.push('\\');
+                result.push_str(&octal);
+            }
+        } else {
+            result.push(ch);
+        }
+    }
+    result
+}
+
 pub struct FileSpawn {
     running : Arc<AtomicBool>,
     handle: Option<JoinHandle<()>>,
@@ -48,6 +81,18 @@ impl FileSpawn {
                             .map(|p| p.display().to_string())
                             .unwrap_or_default();
                         println!("Device added:   {}", node);
+                        let mut mounted = false;
+                        for _ in 0..10 {
+                            thread::sleep(Duration::from_millis(500));
+                            if let Some(mount_path) = find_mount_point(&node) {
+                                println!("Mounted at:     {}", mount_path);
+                                mounted = true;
+                                break;
+                            }
+                        }
+                        if !mounted {
+                            println!("Not automounted (may need manual mount)");
+                        }
                     }
                     EventType::Remove => {
                         let node = event.devnode()
