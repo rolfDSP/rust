@@ -43,19 +43,25 @@ fn unescape_mount_path(path: &str) -> String {
 }
 
 pub struct FileSpawn {
-    running : Arc<AtomicBool>,
-    handle: Option<JoinHandle<()>>,
+    running  : Arc<AtomicBool>,
+    handle   : Option<JoinHandle<()>>,
+    on_mount : Option<Arc<dyn Fn(String) + Send + Sync>>,
 }
 
 impl FileSpawn {
     pub fn new() -> Self{
         Self {
-            running: Arc::new(AtomicBool::new(false)),
-            handle: None,
+            running : Arc::new(AtomicBool::new(false)),
+            handle  : None,
+            on_mount: None,
         }
     }
 
-    fn thread_fn(running: Arc<AtomicBool>) {
+    pub fn set_callback<F: Fn(String) + Send + Sync + 'static>(&mut self, f: F) {
+        self.on_mount = Some(Arc::new(f));
+    }
+
+    fn thread_fn(running: Arc<AtomicBool>, on_mount: Option<Arc<dyn Fn(String) + Send + Sync>>) {
         let mut socket = MonitorBuilder::new().unwrap()
             .match_subsystem("block").unwrap()
             .listen().unwrap();
@@ -81,17 +87,22 @@ impl FileSpawn {
                             .map(|p| p.display().to_string())
                             .unwrap_or_default();
                         println!("Device added:   {}", node);
-                        let mut mounted = false;
+                        let mut found_path: Option<String> = None;
                         for _ in 0..10 {
                             thread::sleep(Duration::from_millis(500));
                             if let Some(mount_path) = find_mount_point(&node) {
                                 println!("Mounted at:     {}", mount_path);
-                                mounted = true;
+                                found_path = Some(mount_path);
                                 break;
                             }
                         }
-                        if !mounted {
-                            println!("Not automounted (may need manual mount)");
+                        match found_path {
+                            Some(path) => {
+                                if let Some(ref cb) = on_mount {
+                                    cb(path);
+                                }
+                            }
+                            None => println!("Not automounted (may need manual mount)"),
                         }
                     }
                     EventType::Remove => {
@@ -109,9 +120,10 @@ impl FileSpawn {
     /// Start and run the thread here, which calls the thread_fn()
     pub fn start_thread(&mut self) {
         self.running.store(true, Ordering::SeqCst);
-        let running = Arc::clone(&self.running);
-        self.handle = Some(thread::spawn(move  || {
-            Self::thread_fn(running);
+        let running  = Arc::clone(&self.running);
+        let on_mount = self.on_mount.clone();
+        self.handle = Some(thread::spawn(move || {
+            Self::thread_fn(running, on_mount);
         }));
     }
 

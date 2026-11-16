@@ -12,6 +12,9 @@ fn main() {
 
     // create and start thread
     let mut f_sp = filespawn::FileSpawn::new();
+    f_sp.set_callback(|path| {
+        println!(">>> Callback: device mounted at {}", path);
+    });
     f_sp.start_thread();
 
     while r == 1 {
