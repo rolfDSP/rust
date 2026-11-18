@@ -1,6 +1,28 @@
 use eframe::egui;
 
+mod subwin;
+use subwin::SubWindow;
+
+/// True when running inside WSL (Windows Subsystem for Linux).
+fn running_in_wsl() -> bool {
+    cfg!(target_os = "linux")
+        && (std::env::var_os("WSL_DISTRO_NAME").is_some()
+            || std::fs::read_to_string("/proc/version")
+                .map(|v| v.to_lowercase().contains("microsoft"))
+                .unwrap_or(false))
+}
+
 fn main() -> eframe::Result {
+    // WSLg's Wayland compositor (Weston) is unstable with native Wayland
+    // clients and can crash ("Connection reset by peer"). Its X11 support
+    // (Xwayland) is much more robust, so force X11 when running in WSL.
+    // Without WAYLAND_DISPLAY, winit falls back to X11 via DISPLAY.
+    if running_in_wsl() {
+        // SAFETY: called at the very start of main, before any other
+        // threads exist that could read the environment concurrently.
+        unsafe { std::env::remove_var("WAYLAND_DISPLAY") };
+    }
+
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_title("My Rust App")
@@ -93,6 +115,12 @@ struct MyApp {
     status: String,
     show_about: bool,
     greeting: String,
+    /// IDs of the extra windows that are currently open
+    child_windows: Vec<u32>,
+    /// Counter used to give each new window a unique ID and title
+    next_window_id: u32,
+    /// Independent sub windows created via File → New → WindowExt
+    ext_windows: Vec<SubWindow>,
 }
 
 impl Default for MyApp {
@@ -102,6 +130,9 @@ impl Default for MyApp {
             show_about: false,
             // Determined once at startup, not on every frame
             greeting: format!("Hello from {}", os_name()),
+            child_windows: Vec::new(),
+            next_window_id: 1,
+            ext_windows: Vec::new(),
         }
     }
 }
@@ -113,9 +144,20 @@ impl eframe::App for MyApp {
         egui::Panel::top("main_menu").show(ui, |ui| {
             egui::MenuBar::new().ui(ui, |ui| {
                 ui.menu_button("File", |ui| {
-                    if ui.button("New").clicked() {
-                        self.status = "File → New clicked".into();
-                    }
+                    ui.menu_button("New", |ui| {
+                        if ui.button("Window").clicked() {
+                            let id = self.next_window_id;
+                            self.next_window_id += 1;
+                            self.child_windows.push(id);
+                            self.status = format!("Opened window {id}");
+                        }
+                        if ui.button("WindowExt").clicked() {
+                            let id = self.next_window_id;
+                            self.next_window_id += 1;
+                            self.ext_windows.push(SubWindow::new(id));
+                            self.status = format!("Opened WindowExt {id}");
+                        }
+                    });
                     if ui.button("Open…").clicked() {
                         self.status = "File → Open clicked".into();
                     }
@@ -146,5 +188,56 @@ impl eframe::App for MyApp {
             .show(&ctx, |ui| {
                 ui.label("A minimal egui/eframe example.");
             });
+
+        // Extra native OS windows created via File → New → Window
+        self.child_windows.retain(|&id| {
+            let mut keep_open = true;
+            ctx.show_viewport_immediate(
+                egui::ViewportId::from_hash_of(("child_window", id)),
+                egui::ViewportBuilder::default()
+                    .with_title(format!("Window {id}"))
+                    .with_inner_size([400.0, 300.0]),
+                |ui, _class| {
+                    // Panel without inner margin, so it covers the whole draw area
+                    let frame = egui::Frame::central_panel(ui.style()).inner_margin(0.0);
+                    egui::CentralPanel::default().frame(frame).show(ui, |ui| {
+                        // Full draw area of the window, recomputed every frame,
+                        // so the border follows when the window is resized
+                        let rect = ui.max_rect().shrink(5.0);
+                        let painter = ui.painter();
+
+                        // White 1 px border, 5 px away from the window edges
+                        painter.rect_stroke(
+                            rect,
+                            0.0, // no rounded corners
+                            egui::Stroke::new(1.0, egui::Color32::WHITE),
+                            egui::StrokeKind::Inside,
+                        );
+
+                        // Text centered in the window
+                        painter.text(
+                            rect.center(),
+                            egui::Align2::CENTER_CENTER,
+                            "Hello, Child",
+                            egui::FontId::proportional(24.0),
+                            egui::Color32::WHITE,
+                        );
+                    });
+
+                    // User clicked the window's close button (X)
+                    if ui.input(|i| i.viewport().close_requested()) {
+                        keep_open = false;
+                    }
+                },
+            );
+            keep_open
+        });
+
+        // Independent sub windows (see subwin.rs): drop closed ones,
+        // then keep showing the remaining ones
+        self.ext_windows.retain(|w| w.is_open());
+        for w in &self.ext_windows {
+            w.show(&ctx);
+        }
     }
 }
