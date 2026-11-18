@@ -1,0 +1,171 @@
+import { Button, VerticalBox } from "std-widgets.slint";
+
+// Dark blue color palette, shared by all windows
+export global Theme {
+    out property <color> bg-panel: #0e1830;
+    out property <color> bg-window: #142242;
+    out property <color> accent: #5aa0ff;
+    out property <color> border: #2c426e;
+    out property <color> text: #dce6fa;
+}
+
+// ---------------------------------------------------------------- main window
+export component MainWindow inherits Window {
+    in property <string> greeting: "Hello";
+    in property <string> status;
+
+    callback new-window();
+    callback new-window-ext();
+    callback quit();
+
+    title: "My Rust App";
+    preferred-width: 800px;
+    preferred-height: 600px;
+    background: Theme.bg-panel;
+
+    MenuBar {
+        Menu {
+            title: "File";
+            Menu {
+                title: "New";
+                MenuItem {
+                    title: "Window";
+                    activated => { root.new-window(); }
+                }
+                MenuItem {
+                    title: "WindowExt";
+                    activated => { root.new-window-ext(); }
+                }
+            }
+            MenuSeparator { }
+            MenuItem {
+                title: "Quit";
+                activated => { root.quit(); }
+            }
+        }
+        Menu {
+            title: "Help";
+            MenuItem {
+                title: "About";
+                activated => { about-popup.show(); }
+            }
+        }
+    }
+
+    VerticalLayout {
+        padding: 12px;
+        spacing: 8px;
+        alignment: start;
+
+        Text {
+            text: root.greeting;
+            font-size: 22px;
+            font-weight: 700;
+            color: Theme.text;
+        }
+        Text {
+            text: "Last action: " + root.status;
+            color: Theme.text;
+        }
+    }
+
+    // Simple "About" dialog
+    about-popup := PopupWindow {
+        x: (root.width - 300px) / 2;
+        y: (root.height - 120px) / 2;
+        width: 300px;
+        height: 120px;
+        close-policy: close-on-click-outside;
+
+        Rectangle {
+            background: Theme.bg-window;
+            border-color: Theme.accent;
+            border-width: 1px;
+            border-radius: 6px;
+
+            VerticalBox {
+                alignment: center;
+                Text {
+                    text: "A minimal Slint example.";
+                    color: Theme.text;
+                    horizontal-alignment: center;
+                }
+                Button {
+                    text: "OK";
+                    clicked => { about-popup.close(); }
+                }
+            }
+        }
+    }
+}
+
+// ------------------------------------------- simple child window (New → Window)
+export component ChildWindow inherits Window {
+    in property <int> number;
+
+    title: "Window " + root.number;
+    preferred-width: 400px;
+    preferred-height: 300px;
+    background: Theme.bg-panel;
+
+    // White 1 px border, 5 px away from the window edges.
+    // Bound to the window size, so it follows when the window is resized.
+    Rectangle {
+        x: 5px;
+        y: 5px;
+        width: root.width - 10px;
+        height: root.height - 10px;
+        border-width: 1px;
+        border-color: white;
+    }
+
+    // Text centered in the window
+    Text {
+        text: "Hello, Child";
+        font-size: 24px;
+        color: white;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+        width: root.width;
+        height: root.height;
+    }
+}
+
+// --------------------------------- independent sub window (New → WindowExt)
+export component ExtWindow inherits Window {
+    in property <int> number;
+    in property <int> clicks;
+    callback clicked();
+
+    title: "WindowExt " + root.number;
+    preferred-width: 420px;
+    preferred-height: 320px;
+    min-width: 200px;
+    min-height: 150px;
+    background: Theme.bg-panel;
+
+    VerticalBox {
+        alignment: start;
+        Text {
+            text: "I am sub window #" + root.number;
+            font-size: 20px;
+            font-weight: 700;
+            color: Theme.text;
+        }
+        Text {
+            text: "I have my own state and my own Rust module.";
+            color: Theme.text;
+        }
+        HorizontalLayout {
+            alignment: start;
+            Button {
+                text: "Click me";
+                clicked => { root.clicked(); }
+            }
+        }
+        Text {
+            text: "Clicked " + root.clicks + " times";
+            color: Theme.text;
+        }
+    }
+}
