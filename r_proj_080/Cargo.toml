@@ -1,0 +1,20 @@
+[package]
+name = "r_proj_080"
+version = "0.1.0"
+edition = "2024"
+description = "PyO3 example: raising, defining, chaining and catching Python exceptions from Rust"
+
+[lib]
+# Name of the native Python module (must match the #[pymodule] function name)
+name = "pyexc"
+# cdylib -> shared library Python can import
+# rlib   -> lets `cargo test` link the crate as a normal Rust library
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# "extension-module" is enabled through pyproject.toml (maturin features),
+# so plain `cargo check` / `cargo test` still work.
+pyo3 = "0.30"
+
+[features]
+extension-module = ["pyo3/extension-module"]

@@ -1,0 +1,17 @@
+[build-system]
+requires = ["maturin>=1.5,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "pyexc"
+version = "0.1.0"
+description = "PyO3 example: Python exceptions raised from Rust and handled in Python"
+# 3.11+ for ExceptionGroup / except* and BaseException.add_note()
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+]
+
+[tool.maturin]
+features = ["extension-module"]
