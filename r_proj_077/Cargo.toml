@@ -1,0 +1,21 @@
+[package]
+name = "r_proj_077"
+version = "0.1.0"
+edition = "2024"
+description = "Comprehensive PyO3 example: exposing Rust functions, classes and data types to Python"
+
+[lib]
+# The name of the native Python module (must match the #[pymodule] function name)
+name = "rustypy"
+# cdylib  -> shared library Python can import
+# rlib    -> lets `cargo test` link the crate as a normal Rust library
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# "extension-module" is enabled through pyproject.toml (maturin features),
+# so plain `cargo check` / `cargo test` still work.
+pyo3 = { version = "0.30", features = ["num-complex"] }
+num-complex = "0.4"
+
+[features]
+extension-module = ["pyo3/extension-module"]
