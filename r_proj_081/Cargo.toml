@@ -1,0 +1,18 @@
+[package]
+name = "r_proj_081"
+version = "0.1.0"
+edition = "2024"
+description = "PyO3 example: embedding a Python script into a Rust binary and executing it"
+
+[lib]
+name = "embedpy"
+path = "src/lib.rs"
+
+[[bin]]
+name = "r_proj_081"
+path = "src/main.rs"
+
+[dependencies.pyo3]
+version = "0.30.1"
+# Start a Python interpreter automatically on the first call to `Python::attach`.
+features = ["auto-initialize"]
